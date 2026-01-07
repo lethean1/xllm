@@ -121,6 +121,17 @@ void Qwen2DecoderLayerImpl::merge_loaded_weights() {
   init_layer();
 }
 
+void Qwen2DecoderLayerImpl::refresh_loaded_weights() {
+  auto& at_weight_tensors = loader_->get_at_weight_tensors();
+  c10_npu::NPUCachingAllocator::emptyCache();
+  for (int i = 0; i < WEIGHT_COUNT_PER_LAYER; ++i) {
+    atb_weight_tensors_[i] =
+        atb_speed::Utils::AtTensor2Tensor(at_weight_tensors[i]);
+  }
+
+  init_layer();
+}
+
 void Qwen2DecoderLayerImpl::initialize_quantization_parameters() {
   if (quantize_type_ == "w8a8") {
     prefill_param_.packQuantType = {static_cast<int>(PackType::ALL_W8A8),

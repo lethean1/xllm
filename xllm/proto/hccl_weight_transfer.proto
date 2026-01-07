@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option go_package = "jd.com/jd-infer/xllm;xllm";
+package xllm.proto;
+
+option cc_enable_arenas = true;
+option cc_generic_services = true;
+
+message InitCommRequest {
+  string addr = 1;
+  bytes root_info = 2; // HcclRootInfo
+}
+
+message InitCommResponse {
+  bool success = 1;
+}
+
+message GetLayerMetaRequest {
+  int32 layer_id = 1;
+}
+
+message TensorMeta {
+  int32 dtype = 1;       // at::ScalarType
+  repeated int64 shape = 2;
+}
+
+message GetLayerMetaResponse {
+  repeated TensorMeta metas = 1;
+}
+
+message TriggerSendRequest {
+  int32 layer_id = 1;
+}
+
+message TriggerSendResponse {
+  bool success = 1;
+}
+
+service WeightTransferService {
+  // 1. 建立 HCCL 通信域
+  rpc InitComm(InitCommRequest) returns (InitCommResponse);
+  
+  // 2. Worker 拉取元数据 (Shape/Dtype)
+  rpc GetLayerMeta(GetLayerMetaRequest) returns (GetLayerMetaResponse);
+  
+  // 3. Worker 通知 Sender 开始 HcclSend
+  rpc TriggerSend(TriggerSendRequest) returns (TriggerSendResponse);
+}

@@ -240,3 +240,8 @@ DECLARE_bool(enable_constrained_decoding);
 #if defined(USE_NPU)
 DECLARE_string(npu_kernel_backend);
 #endif
+DECLARE_string(weight_load_mode);
+
+DECLARE_int32(weight_transfer_port);
+
+DECLARE_string(remote_addr);

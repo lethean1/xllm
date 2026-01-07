@@ -71,6 +71,13 @@ void WordEmbeddingImpl::merge_loaded_weights() {
   init_layer();
 }
 
+void WordEmbeddingImpl::refresh_loaded_weights() {
+  auto& at_weight_tensors = loader_->get_at_weight_tensors();
+  atb_weight_tensors_[0] =
+      atb_speed::Utils::AtTensor2Tensor(at_weight_tensors[0]);
+  init_layer();
+}
+
 int64_t WordEmbeddingImpl::init_layer() {
   BaseLayer::name_ = "word_embedding_layer";
   modelName_ = "llm";

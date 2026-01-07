@@ -273,6 +273,25 @@ class DeepseekV2MtpForCausalLMImpl : public torch::nn::Module {
     model_->set_word_embedding(word_embedding);
   }
 
+  std::vector<at::Tensor>& get_decoder_layer_weight(int32_t id) {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+  std::vector<at::Tensor>& get_lm_head_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+  std::vector<at::Tensor>& get_word_embedding_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+  std::vector<at::Tensor>& get_norm_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+
+  void refresh_loaded_weights() {}
+
  private:
   DeepseekV2MtpModel model_{nullptr};
   layer::LmHead lm_head_{nullptr};

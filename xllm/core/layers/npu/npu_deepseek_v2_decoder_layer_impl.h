@@ -119,6 +119,8 @@ class DeepseekV2DecoderLayerImpl : public BaseLayer {
 
   void update_expert_weight();
 
+  virtual void refresh_loaded_weights() override;
+
   virtual int64_t init_layer() override;
 
   torch::Tensor forward(torch::Tensor& x,

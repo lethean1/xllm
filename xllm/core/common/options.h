@@ -202,6 +202,12 @@ class Options {
 
   // Layer wise H2D copy batchs
   PROPERTY(uint32_t, layers_wise_copy_batchs) = 4;
+  
+  PROPERTY(std::string, weight_load_mode) = "disk";
+
+  PROPERTY(uint16_t, weight_transfer_port) = 26001;
+
+  PROPERTY(std::string, remote_addr) = "127.0.0.1:26001";
 };
 
 }  // namespace xllm

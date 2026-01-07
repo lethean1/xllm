@@ -119,6 +119,27 @@ class CausalLM : public torch::nn::Module {
     LOG(FATAL) << "Method 'set_word_embedding' is not implemented/supported by "
                   "this model.";
   }
+  virtual std::vector<at::Tensor>& get_decoder_layer_weight(int32_t layer_id) {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+
+  virtual std::vector<at::Tensor>& get_lm_head_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+
+  virtual std::vector<at::Tensor>& get_word_embedding_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  }
+
+  virtual std::vector<at::Tensor>& get_norm_weight() {
+    static std::vector<at::Tensor> empty_vector;
+    return empty_vector;
+  };
+
+  virtual void refresh_loaded_weights() {};
 };
 
 template <typename Model>
@@ -187,6 +208,24 @@ class CausalLMImpl : public CausalLM {
   torch::Device device() const override { return options_.device(); }
 
   const torch::TensorOptions& options() const override { return options_; }
+
+  std::vector<at::Tensor>& get_decoder_layer_weight(int32_t layer_id) override {
+    return model_->get_decoder_layer_weight(layer_id);
+  }
+
+  std::vector<at::Tensor>& get_lm_head_weight() override {
+    return model_->get_lm_head_weight();
+  }
+
+  std::vector<at::Tensor>& get_word_embedding_weight() override {
+    return model_->get_word_embedding_weight();
+  }
+
+  std::vector<at::Tensor>& get_norm_weight() override {
+    return model_->get_norm_weight();
+  }
+
+  void refresh_loaded_weights() override { model_->refresh_loaded_weights(); }
 
  private:
   Model model_;

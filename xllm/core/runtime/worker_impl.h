@@ -28,6 +28,7 @@ limitations under the License.
 #if defined(USE_NPU)
 #include "framework/kv_cache/hccl_kv_cache_transfer.h"
 #include "framework/kv_cache/llm_data_dist_transfer.h"
+#include "framework/weight_transfer/hccl_weight_transfer.h"
 #endif
 #include "framework/eplb/eplb_executor.h"
 #include "framework/kv_cache/hierarchy_kv_cache_transfer.h"
@@ -68,6 +69,8 @@ class WorkerImpl {
                           int32_t random_seed);
 
   virtual void load_model(std::unique_ptr<ModelLoader> loader);
+
+  virtual void load_model_from_instance(const std::string& addr);
 
   virtual std::tuple<int64_t, int64_t> estimate_kv_cache_capacity();
 
@@ -237,6 +240,7 @@ class WorkerImpl {
 
 #if defined(USE_NPU)
   std::shared_ptr<KVCacheTransfer> kv_cache_transfer_;
+  std::unique_ptr<HcclWeightTransfer> hccl_weight_transfer_;
 #endif
 
   std::unique_ptr<HierarchyKVCacheTransfer> hierarchy_kv_cache_transfer_;

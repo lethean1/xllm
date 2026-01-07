@@ -554,7 +554,30 @@ bool WorkerImpl::init_model(const std::string& model_weights_path,
     return false;
   }
 
-  this->load_model(std::move(model_loader));
+  hccl_weight_transfer_ = std::make_unique<HcclWeightTransfer>(
+      device_.index(), options_.weight_transfer_port());
+
+  if (options_.weight_load_mode() == "disk") {
+    this->load_model(std::move(model_loader));
+  } else {
+    this->load_model_from_instance(options_.remote_addr());
+  }
+
+  std::vector<at::Tensor> global_tensors = {
+      model_->get_word_embedding_weight()[0],
+      model_->get_norm_weight()[0],
+      model_->get_lm_head_weight()[0],
+  };
+
+  hccl_weight_transfer_->register_layer(-1, global_tensors);
+
+  int32_t num_layers = context_.get_model_args().n_layers();
+  for (int i = 0; i < num_layers; ++i) {
+    hccl_weight_transfer_->register_layer(i,
+                                          model_->get_decoder_layer_weight(i));
+  }
+
+  hccl_weight_transfer_->start_serving();
 
   status_ = Status::LOADED;
   if (FLAGS_enable_eplb) {
@@ -573,6 +596,25 @@ bool WorkerImpl::init_model(const std::string& model_weights_path,
 void WorkerImpl::load_model(std::unique_ptr<ModelLoader> loader) {
   CHECK(model_ != nullptr) << "Model is not initialized.";
   model_->load_model(std::move(loader));
+}
+
+void WorkerImpl::load_model_from_instance(const std::string& addr) {
+  if (!hccl_weight_transfer_->connect_to_remote(addr)) {
+    LOG(FATAL) << "Connect failed";
+  }
+  std::vector<at::Tensor> global_tensors;
+  hccl_weight_transfer_->pull_layer(-1, global_tensors);
+
+  model_->get_word_embedding_weight()[0] = global_tensors[0];
+  model_->get_norm_weight()[0] = global_tensors[1];
+  model_->get_lm_head_weight()[0] = global_tensors[2];
+  int32_t num_layers = context_.get_model_args().n_layers();
+
+  for (int i = 0; i < num_layers; ++i) {
+    auto& layer_tensors = model_->get_decoder_layer_weight(i);
+    hccl_weight_transfer_->pull_layer(i, layer_tensors);
+  }
+  model_->refresh_loaded_weights();
 }
 
 folly::SemiFuture<bool> WorkerImpl::allocate_kv_cache_async(

@@ -166,6 +166,15 @@ class BaseLayer : public torch::nn::Module {
   void correct_tensor_dtype(torch::Tensor& tensor,
                             const std::string& tensorName);
 
+  std::vector<at::Tensor>& get_at_weight_tensors() {
+    if (loader_) {
+      return loader_->get_at_weight_tensors();
+    }
+    return at_weight_tensors_;
+  }
+
+  virtual void refresh_loaded_weights() {};
+
  protected:
   atb::Tensor XTensor2Tensor(const std::shared_ptr<xllm::XTensor>& xtensor);
 

@@ -27,6 +27,8 @@ BlockCopyImpl::BlockCopyImpl(const ModelContext& context) : BaseLayer(context) {
 
 void BlockCopyImpl::merge_loaded_weights() { init_layer(); }
 
+void BlockCopyImpl::refresh_loaded_weights() { init_layer(); }
+
 int64_t BlockCopyImpl::init_layer() {
   BaseLayer::name_ = "block_copy_layer";
   model_name_ = "llm";

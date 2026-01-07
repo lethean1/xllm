@@ -49,6 +49,8 @@ class BlockCopyImpl : public BaseLayer {
 
   void merge_loaded_weights();
 
+  void refresh_loaded_weights();
+
   int64_t init_layer();
 
   torch::Tensor forward(const torch::Tensor& key_cache,

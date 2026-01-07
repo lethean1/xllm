@@ -232,8 +232,10 @@ int run() {
       .max_requests_per_batch(FLAGS_max_requests_per_batch)
       .enable_continuous_kvcache(FLAGS_enable_continuous_kvcache)
       .enable_shm(FLAGS_enable_shm)
-      .is_local(is_local);
-
+      .is_local(is_local)
+      .weight_load_mode(FLAGS_weight_load_mode)
+      .weight_transfer_port(FLAGS_weight_transfer_port)
+      .remote_addr(FLAGS_remote_addr);
   InstanceName::name()->set_name(options.instance_name().value_or(""));
 
   // working node

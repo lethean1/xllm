@@ -64,7 +64,10 @@ std::string Options::to_string() const {
      << ", enable_continuous_kvcache: " << enable_continuous_kvcache()
      << ", disable_ttft_profiling: " << disable_ttft_profiling()
      << ", enable_forward_interruption: " << enable_forward_interruption()
-     << ", server_idx: " << server_idx();
+     << ", server_idx: " << server_idx()
+     << ", weight_load_mode: " << weight_load_mode()
+     << ", weight_transfer_port: " << weight_transfer_port()
+     << ", remote_addr: " << remote_addr();
   ss << "]";
   return ss.str();
 }

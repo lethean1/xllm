@@ -57,6 +57,12 @@ class DeepseekV2DecoderLayerImpl : public torch::nn::Module {
   }
   virtual void update_expert_weight(int32_t layer_id) { return; }
 
+  void refresh_loaded_weights() { decoder_layer_->refresh_loaded_weights(); }
+
+  std::vector<at::Tensor>& get_decoder_layer_weight() {
+    return decoder_layer_->get_at_weight_tensors();
+  }
+
  private:
   layer::DeepseekV2DecoderLayer decoder_layer_{nullptr};
 };
@@ -143,6 +149,18 @@ class DeepseekV2ModelImpl : public torch::nn::Module {
 
   void set_word_embedding(layer::WordEmbedding& word_embedding) {
     embed_tokens_ = word_embedding;
+  }
+
+  std::vector<at::Tensor>& get_word_embedding_weight() {
+    return embed_tokens_->get_at_weight_tensors();
+  }
+
+  std::vector<at::Tensor>& get_norm_weight() {
+    return norm_->get_at_weight_tensors();
+  }
+
+  std::vector<at::Tensor>& get_decoder_layer_weight_by_id(int32_t layer_id) {
+    return layers_[layer_id]->get_decoder_layer_weight();
   }
 
  private:
