@@ -243,4 +243,9 @@ void EplbManager::set_prepared_layer_ids(
   }
 }
 
+torch::Tensor EplbManager::get_expert_distribution() {
+  std::lock_guard<std::mutex> lock(state_.mtx);
+  return state_.expert_distribution.clone();
+}
+
 }  // namespace xllm

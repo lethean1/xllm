@@ -447,6 +447,33 @@ void APIService::GetCacheInfo(::google::protobuf::RpcController* controller,
   }
 }
 
+void APIService::GetExpertDistribution(
+    ::google::protobuf::RpcController* controller,
+    const proto::HttpRequest* request,
+    proto::HttpResponse* response,
+    ::google::protobuf::Closure* done) {
+  brpc::ClosureGuard done_guard(done);
+  if (!request || !response || !controller) {
+    LOG(ERROR) << "brpc request | respose | controller is null";
+    return;
+  }
+  std::vector<int32_t> dims;
+  std::vector<int32_t> data;
+  master_->get_expert_distribution(dims, data);
+  auto ctrl = reinterpret_cast<brpc::Controller*>(controller);
+  auto arena = response->GetArena();
+  auto resp_pb = google::protobuf::Arena::CreateMessage<
+      proto::GetExpertDistributionResponse>(arena);
+  resp_pb->mutable_dims()->Add(dims.begin(), dims.end());
+  resp_pb->mutable_data()->Add(data.begin(), data.end());
+  std::string err_msg;
+  butil::IOBufAsZeroCopyOutputStream json_output(&ctrl->response_attachment());
+  if (!json2pb::ProtoMessageToJson(*resp_pb, &json_output, &err_msg)) {
+    LOG(ERROR) << "proto to json failed";
+    return;
+  }
+}
+
 void APIService::LinkCluster(::google::protobuf::RpcController* controller,
                              const proto::HttpRequest* request,
                              proto::HttpResponse* response,

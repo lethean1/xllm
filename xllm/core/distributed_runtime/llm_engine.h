@@ -109,6 +109,9 @@ class LLMEngine : public Engine {
 
   std::shared_ptr<DistManager> get_dist_manager() { return dist_manager_; };
 
+  bool get_expert_distribution(std::vector<int32_t>& dims,
+                               std::vector<int32_t>& data) override;
+
  private:
   friend class SpeculativeEngine;
   // setup workers internal

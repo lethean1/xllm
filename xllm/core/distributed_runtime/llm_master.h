@@ -90,6 +90,9 @@ class LLMMaster : public Master {
                       const std::vector<uint16_t>& ports,
                       const int32_t dp_size);
 
+  void get_expert_distribution(std::vector<int32_t>& dims,
+                               std::vector<int32_t>& data);
+
  private:
   std::shared_ptr<Request> generate_request(
       std::string prompt,

@@ -139,6 +139,11 @@ void XServiceClient::set_scheduler(Scheduler* scheduler) {
   scheduler_ = scheduler;
 }
 
+void XServiceClient::set_expert_distribution_provider(
+    std::function<void(std::vector<int32_t>&, std::vector<int32_t>&)>
+        provider) {
+  expert_dist_provider_ = std::move(provider);
+}
 XServiceClient::~XServiceClient() {
   exited_ = true;
   if (heartbeat_thread_ && heartbeat_thread_->joinable()) {
@@ -349,6 +354,23 @@ void XServiceClient::heartbeat() {
       if (!tbt.empty()) {
         auto max_tbt = std::max_element(tbt.begin(), tbt.end());
         req.mutable_latency_metrics()->set_recent_max_tbt(*max_tbt);
+      }
+
+      if (expert_dist_provider_) {
+        std::vector<int32_t> dims;
+        std::vector<int32_t> data;
+        expert_dist_provider_(dims, data);
+        if (!dims.empty() && !data.empty()) {
+          auto ed = req.mutable_expert_distribution();
+          ed->mutable_dims()->Reserve(dims.size());
+          for (auto& v : dims) {
+            *ed->mutable_dims()->Add() = v;
+          }
+          ed->mutable_data()->Reserve(data.size());
+          for (auto& v : data) {
+            *ed->mutable_data()->Add() = v;
+          }
+        }
       }
 
       xllm_service::proto::Status resp;

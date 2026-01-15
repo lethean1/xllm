@@ -59,6 +59,9 @@ class Master {
 
   RateLimiter* get_rate_limiter() { return &rate_limiter_; }
 
+  virtual void get_expert_distribution(std::vector<int32_t>& dims,
+                                       std::vector<int32_t>& data) {}
+
  protected:
   Options options_;
   std::unique_ptr<Engine> engine_;

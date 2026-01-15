@@ -17,6 +17,7 @@ limitations under the License.
 
 #include <brpc/channel.h>
 
+#include <functional>
 #include <shared_mutex>
 #include <string>
 #include <thread>
@@ -49,6 +50,9 @@ class XServiceClient {
             const std::string& instance_name = "",
             const BlockManagerPool* block_manager_pool = nullptr);
   void set_scheduler(Scheduler* scheduler);
+  void set_expert_distribution_provider(
+      std::function<void(std::vector<int32_t>&, std::vector<int32_t>&)>
+          provider);
   bool initialize_done() { return initialize_done_; }
 
   std::string get_instance_name();
@@ -83,6 +87,8 @@ class XServiceClient {
   std::unique_ptr<EtcdClient> etcd_client_;
   const BlockManagerPool* block_manager_pool_;  // not own
   Scheduler* scheduler_;                        // not own
+  std::function<void(std::vector<int32_t>&, std::vector<int32_t>&)>
+      expert_dist_provider_;
 };
 
 }  // namespace xllm

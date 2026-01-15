@@ -41,6 +41,11 @@ message ClusterInfos {
   repeated string addrs = 5;
 }
 
+message GetExpertDistributionResponse {
+  repeated int32 dims = 1;
+  repeated int32 data = 2;
+}
+
 service XllmAPIService {
   rpc Completions (CompletionRequest) returns (CompletionResponse);
   rpc CompletionsHttp (HttpRequest) returns (HttpResponse);
@@ -64,4 +69,5 @@ service XllmAPIService {
   rpc LinkCluster (HttpRequest) returns (HttpResponse);
   rpc UnlinkCluster (HttpRequest) returns (HttpResponse);
   rpc ModelVersionsHttp (HttpRequest) returns (HttpResponse);
+  rpc GetExpertDistribution (HttpRequest) returns (HttpResponse);
 };

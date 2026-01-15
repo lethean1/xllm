@@ -900,4 +900,77 @@ std::vector<RawForwardInput> LLMEngine::prepare_inputs(
   return batched_inputs;
 }
 
+bool LLMEngine::get_expert_distribution(std::vector<int32_t>& dims,
+                                        std::vector<int32_t>& data) {
+  if (FLAGS_enable_eplb && eplb_manager_) {
+    auto dist = eplb_manager_->get_expert_distribution();
+    if (dist.numel() == 0 || dist.dim() != 3) {
+      return false;
+    }
+    dims.clear();
+    dims.reserve(dist.dim());
+    for (int i = 0; i < dist.dim(); ++i) {
+      dims.emplace_back(static_cast<int32_t>(dist.size(i)));
+    }
+    auto contiguous = dist.contiguous();
+    int32_t* ptr = contiguous.data_ptr<int32_t>();
+    data.assign(ptr, ptr + contiguous.numel());
+    return true;
+  }
+
+  bool is_deepseek_moe =
+      args_.n_routed_experts() > 0 && args_.num_experts_per_tok() > 0;
+  bool is_qwen_moe = args_.num_experts() > 0 && args_.num_experts_per_tok() > 0;
+  if (!is_deepseek_moe && !is_qwen_moe) {
+    dims.clear();
+    data.clear();
+    return false;
+  }
+
+  int32_t layer_num = 0;
+  int32_t device_num = static_cast<int32_t>(options_.ep_size());
+  int32_t experts_num = 0;
+  if (is_deepseek_moe) {
+    layer_num = args_.n_layers() - args_.first_k_dense_replace();
+    experts_num = static_cast<int32_t>(args_.n_routed_experts());
+  } else {
+    auto mlp_only_layers = args_.mlp_only_layers();
+    auto stride = std::max<int32_t>(args_.decoder_sparse_step(), 1);
+    for (int32_t layer = 0; layer < args_.n_layers(); ++layer) {
+      bool mlp_only =
+          std::find(mlp_only_layers.begin(), mlp_only_layers.end(), layer) !=
+          mlp_only_layers.end();
+      bool is_moe_layer = !mlp_only && ((layer + 1) % stride == 0);
+      if (is_moe_layer) {
+        ++layer_num;
+      }
+    }
+    experts_num = static_cast<int32_t>(args_.num_experts());
+  }
+  if (layer_num <= 0 || device_num <= 0 || experts_num <= 0) {
+    return false;
+  }
+  int32_t device_route_experts_num = experts_num / device_num;
+  int32_t device_experts_num = device_route_experts_num;
+
+  dims.clear();
+  dims.reserve(3);
+  dims.emplace_back(layer_num);
+  dims.emplace_back(device_num);
+  dims.emplace_back(device_experts_num);
+
+  data.clear();
+  data.reserve(static_cast<size_t>(layer_num) * device_num *
+               device_experts_num);
+  for (int32_t layer = 0; layer < layer_num; ++layer) {
+    for (int32_t device = 0; device < device_num; ++device) {
+      int32_t base = device * device_route_experts_num;
+      for (int32_t expert = 0; expert < device_experts_num; ++expert) {
+        data.emplace_back(base + expert);
+      }
+    }
+  }
+  return true;
+}
+
 }  // namespace xllm

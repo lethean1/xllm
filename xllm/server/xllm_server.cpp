@@ -44,6 +44,7 @@ bool XllmServer::start(std::unique_ptr<APIService> service) {
                           "get_cache_info => GetCacheInfo,"
                           "link_cluster => LinkCluster,"
                           "unlink_cluster => UnlinkCluster,"
+                          "get_expert_distribution => GetExpertDistribution,"
                           "v2/repository/index => ModelVersionsHttp,") != 0) {
     LOG(ERROR) << "Fail to add api service";
     return false;

@@ -47,6 +47,8 @@ class EplbManager {
   // expert_layer_ids: Prepared layer IDs per device
   void set_prepared_layer_ids(const std::vector<int32_t>& expert_layer_ids);
 
+  torch::Tensor get_expert_distribution();
+
  private:
   // Thread functions
   void rebalance_experts_loop();

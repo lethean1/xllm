@@ -130,6 +130,12 @@ class Engine {
     LOG(FATAL) << " unlink_cluster is notimplemented!";
   };
 
+  virtual bool get_expert_distribution(std::vector<int32_t>& dims,
+                                       std::vector<int32_t>& data) {
+    LOG(FATAL) << " get_expert_distribution is notimplemented!";
+    return false;
+  };
+
   struct KVCacheCapacity {
     int64_t n_blocks = 0;
     int64_t n_pages = 0;  // for continuous kvcache

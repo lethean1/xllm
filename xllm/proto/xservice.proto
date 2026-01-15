@@ -49,6 +49,11 @@ message LoadMetrics {
   float gpu_cache_usage_perc = 2;
 }
 
+message ExpertDistribution {
+  repeated int32 dims = 1;
+  repeated int32 data = 2;
+}
+
 message LatencyMetrics {
   int64 recent_max_ttft = 1;
   int64 recent_max_tbt = 2;
@@ -59,6 +64,7 @@ message HeartbeatRequest {
   KvCacheEvent cache_event = 2;
   LoadMetrics load_metrics = 3;
   LatencyMetrics latency_metrics = 4;
+  ExpertDistribution expert_distribution = 5;
 }
 
 message InstanceID {
@@ -84,4 +90,3 @@ service XllmRpcService {
   // This can eliminate the cost brought by forwarding through prefill.
   rpc Generations(xllm.proto.DisaggStreamGenerations) returns (xllm.proto.StatusSet) {}
 }
-

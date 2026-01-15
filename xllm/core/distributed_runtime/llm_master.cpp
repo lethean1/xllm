@@ -101,6 +101,10 @@ LLMMaster::LLMMaster(const Options& options)
   scheduler_ = create_continuous_scheduler(engine_.get(), scheduler_options);
 
   if (options_.enable_service_routing()) {
+    XServiceClient::get_instance()->set_expert_distribution_provider(
+        [this](std::vector<int32_t>& dims, std::vector<int32_t>& data) {
+          this->get_expert_distribution(dims, data);
+        });
     auto& instance_info = scheduler_->get_instance_info();
     XServiceClient::get_instance()->register_instance(instance_info);
   }
@@ -491,6 +495,11 @@ LLMAssistantMaster::LLMAssistantMaster(const Options& options)
   }
 
   running_ = true;
+}
+
+void LLMMaster::get_expert_distribution(std::vector<int32_t>& dims,
+                                        std::vector<int32_t>& data) {
+  engine_->get_expert_distribution(dims, data);
 }
 
 void LLMAssistantMaster::run() {
